@@ -161,6 +161,37 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="environment.h" />
+    <ClInclude Include="seeta\AgePredictor.h" />
+    <ClInclude Include="seeta\CFaceInfo.h" />
+    <ClInclude Include="seeta\Common\CStruct.h" />
+    <ClInclude Include="seeta\Common\Struct.h" />
+    <ClInclude Include="seeta\CStream.h" />
+    <ClInclude Include="seeta\CStruct.h" />
+    <ClInclude Include="seeta\CTrackingFaceInfo.h" />
+    <ClInclude Include="seeta\EyeStateDetector.h" />
+    <ClInclude Include="seeta\FaceAntiSpoofing.h" />
+    <ClInclude Include="seeta\FaceDatabase.h" />
+    <ClInclude Include="seeta\FaceDetector.h" />
+    <ClInclude Include="seeta\FaceLandmarker.h" />
+    <ClInclude Include="seeta\FaceRecognizer.h" />
+    <ClInclude Include="seeta\FaceTracker.h" />
+    <ClInclude Include="seeta\GenderPredictor.h" />
+    <ClInclude Include="seeta\MaskDetector.h" />
+    <ClInclude Include="seeta\QualityAssessor.h" />
+    <ClInclude Include="seeta\QualityOfBrightness.h" />
+    <ClInclude Include="seeta\QualityOfClarity.h" />
+    <ClInclude Include="seeta\QualityOfIntegrity.h" />
+    <ClInclude Include="seeta\QualityOfLBN.h" />
+    <ClInclude Include="seeta\QualityOfPose.h" />
+    <ClInclude Include="seeta\QualityOfPoseEx.h" />
+    <ClInclude Include="seeta\QualityOfResolution.h" />
+    <ClInclude Include="seeta\QualityStructure.h" />
+    <ClInclude Include="seeta\SeetaFaceDetectorConfig.h" />
+    <ClInclude Include="seeta\SeetaFaceLandmarkerConfig.h" />
+    <ClInclude Include="seeta\SeetaFaceRecognizerConfig.h" />
+    <ClInclude Include="seeta\SeetaMaskDetectorConfig.h" />
+    <ClInclude Include="seeta\Stream.h" />
+    <ClInclude Include="seeta\Struct.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ViewFaceBridge.cpp" />
