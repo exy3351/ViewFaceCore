@@ -6,18 +6,26 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="View.Drawing.Extensions" Version="0.2.0" />
-		<PackageReference Include="ViewFaceCore" Version="0.3.5" />
+		<!--<PackageReference Include="View.Drawing.Extensions" Version="0.2.0" />-->
+		<!--<PackageReference Include="ViewFaceCore" Version="0.3.5" />
 		<PackageReference Include="ViewFaceCore.all_models" Version="6.0.2" />
 		<PackageReference Include="ViewFaceCore.runtime.linux.arm" Version="6.0.2" />
 		<PackageReference Include="ViewFaceCore.runtime.linux.arm64" Version="6.0.2" />
 		<PackageReference Include="ViewFaceCore.runtime.ubuntu.20.04.x64" Version="6.0.2" />
 		<PackageReference Include="ViewFaceCore.runtime.win.x64" Version="6.0.2" />
-		<PackageReference Include="ViewFaceCore.runtime.win.x86" Version="6.0.2" />
+		<PackageReference Include="ViewFaceCore.runtime.win.x86" Version="6.0.2" />-->
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\..\viewface.snk" Link="viewface.snk" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Libraries\ViewFaceCore.runtime.win.x64\ViewFaceCore.runtime.win.x64.csproj" />
+	  <ProjectReference Include="..\..\Libraries\ViewFaceCore.runtime.win.x86\ViewFaceCore.runtime.win.x86.csproj" />
+	  <ProjectReference Include="..\..\Models\ViewFaceCore.all_models\ViewFaceCore.all_models.csproj" />
+	  
+	  <ProjectReference Include="..\..\ViewFaceCore\ViewFaceCore.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
