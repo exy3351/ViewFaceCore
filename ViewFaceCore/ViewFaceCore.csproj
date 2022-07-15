@@ -2,17 +2,17 @@
 
 	<!--Library Info-->
 	<PropertyGroup>
-		<TargetFrameworks>net40;net45;net461;netstandard2.0;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
 		<Platforms>AnyCPU</Platforms>
-		<Authors>View</Authors>
-		<Version>0.3.5</Version>
 		<OutputType>Library</OutputType>
-	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- 打包路径 -->
+		<PackageOutputPath>..\Output\Nuget</PackageOutputPath>
+		<OutputPath>..\Output\Bin_$(Configuration)_$(TargetFramework)\</OutputPath>
+		<DocumentationFile>..\Output\Bin_$(Configuration)_$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
+		<!-- 自定义obj的路径，重要，否则编译时经常报obj访问冲突的问题 -->
+		<IntermediateOutputPath>..\Output\obj\$(MSBuildProjectName)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+		<AssemblyOriginatorKeyFile>..\viewface.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
-
 
 	<!--Package Info-->
 	<ItemGroup>
@@ -22,28 +22,32 @@
 
 	<PropertyGroup>
 		<PackageId>ViewFaceCore</PackageId>
-		<Authors>View</Authors>
 		<PackageTags>seetaface viewface face-identification face-recognition 人脸识别</PackageTags>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageIcon>View-Logo.png</PackageIcon>
 		<PackageProjectUrl>https://github.com/ViewFaceCore/ViewFaceCore</PackageProjectUrl>
-		<Description>一款基于 SeetaFace6 实现的 .NET 平台的人脸识别库。
-支持多 .NET 目标，支持 Windows(x64/x86)、Linux(arm/arm64/x64)。
+		<Description>
+			一款基于 SeetaFace6 实现的 .NET 平台的人脸识别库。
+			支持多 .NET 目标，支持 Windows(x64/x86)、Linux(arm/arm64/x64)。
 
-Windows-x64 支持库 : ViewFaceCore.runtime.win.x64
-Windows-x86 支持库 : ViewFaceCore.runtime.win.x86
-Ubuntu-x64 支持库 : ViewFaceCore.runtime.ubuntu.20.04.x64
-Linux-arm 支持库 : ViewFaceCore.runtime.linux.arm
-Linux-arm64 支持库 : ViewFaceCore.runtime.linux.arm64
+			Windows-x64 支持库 : ViewFaceCore.runtime.win.x64
+			Windows-x86 支持库 : ViewFaceCore.runtime.win.x86
+			Ubuntu-x64 支持库 : ViewFaceCore.runtime.ubuntu.20.04.x64
+			Linux-arm 支持库 : ViewFaceCore.runtime.linux.arm
+			Linux-arm64 支持库 : ViewFaceCore.runtime.linux.arm64
 
-可按需添加模型包 : ViewFaceCore.model.*
-或添加所有模型包 : ViewFaceCore.all_models
+			可按需添加模型包 : ViewFaceCore.model.*
+			或添加所有模型包 : ViewFaceCore.all_models
 		</Description>
 		<PackageReleaseNotes></PackageReleaseNotes>
-	
+
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\viewface.snk" Link="viewface.snk" />
+	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net40'">
 	</ItemGroup>

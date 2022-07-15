@@ -1,14 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net40;net45;net461;netstandard2.0;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
 		<Version>6.0.2</Version>
 		<PackageVersion>$(Version)</PackageVersion>
 		<Authors>View</Authors>
 		<PackageIcon>View-Logo.png</PackageIcon>
 	</PropertyGroup>
+	
 	<ItemGroup>
 		<None Include="..\..\Images\View-Logo.png" Pack="true" PackagePath="" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\viewface.snk" Link="viewface.snk" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<ProjectReference Include="..\ViewFaceCore.model.age_predictor\ViewFaceCore.model.age_predictor.csproj" PrivateAssets="contentFiles;analyzers" />
 		<ProjectReference Include="..\ViewFaceCore.model.eye_state\ViewFaceCore.model.eye_state.csproj" PrivateAssets="contentFiles;analyzers" />
