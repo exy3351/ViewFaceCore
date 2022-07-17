@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Threading.Tasks;
-using ViewFaceCore.Extension;
+﻿using ViewFaceCore.Extension;
 using ViewFaceCore.Plus;
 using ViewFaceCore.Sharp.Configs;
 using ViewFaceCore.Sharp.Exceptions;
@@ -21,7 +17,6 @@ namespace ViewFaceCore.Sharp
     /// </summary>
     public sealed class ViewFace : IDisposable
     {
-        // Constructor
         /// <summary>
         /// 使用默认的模型目录初始化人脸识别类
         /// </summary>
@@ -49,7 +44,6 @@ namespace ViewFaceCore.Sharp
         /// <returns></returns>
         public override string ToString() => $"处理器架构:{(Environment.Is64BitProcess ? "x64" : "x86")} {base.ToString()}";
 
-        // Public Property
         /// <summary>
         /// 获取或设置人脸检测器配置
         /// </summary>
@@ -57,7 +51,11 @@ namespace ViewFaceCore.Sharp
         /// <summary>
         /// 获取或设置模型路径
         /// </summary>
-        public string ModelPath { get => ViewFaceBridge.ModelPath; set => ViewFaceBridge.ModelPath = value; }
+        public string ModelPath
+        {
+            get => ViewFaceBridge.ModelPath;
+            set => ViewFaceBridge.ModelPath = value;
+        }
         /// <summary>
         /// 获取或设置人脸类型。
         /// <para>

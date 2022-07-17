@@ -1,12 +1,6 @@
 ﻿#if NET45_OR_GREATER || NETCOREAPP || NETSTANDARD
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Threading.Tasks;
-using ViewFaceCore.Extension;
-using ViewFaceCore.Plus;
-using ViewFaceCore.Sharp.Configs;
 using ViewFaceCore.Sharp.Exceptions;
 using ViewFaceCore.Sharp.Model;
 

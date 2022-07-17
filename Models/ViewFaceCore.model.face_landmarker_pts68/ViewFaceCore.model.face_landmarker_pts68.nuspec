@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>ViewFaceCore.model.face_landmarker_pts68</id>
-		<version>6.0.0</version>
+		<version>22.7.16</version>
 		<title></title>
 		<authors>View</authors>
 		<owners></owners>

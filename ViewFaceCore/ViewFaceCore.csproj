@@ -4,7 +4,6 @@
 	<PropertyGroup>
 		<Platforms>AnyCPU</Platforms>
 		<OutputType>Library</OutputType>
-
 		<!-- 打包路径 -->
 		<PackageOutputPath>..\Output\Nuget</PackageOutputPath>
 		<OutputPath>..\Output\Bin_$(Configuration)_$(TargetFramework)\</OutputPath>

@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<Version>6.0.2</Version>
-		<PackageVersion>$(Version)</PackageVersion>
-		<Authors>View</Authors>
 		<PackageIcon>View-Logo.png</PackageIcon>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<None Include="..\..\Images\View-Logo.png" Pack="true" PackagePath="" />
 	</ItemGroup>
@@ -13,7 +10,7 @@
 	<ItemGroup>
 		<None Include="..\..\viewface.snk" Link="viewface.snk" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<ProjectReference Include="..\ViewFaceCore.model.age_predictor\ViewFaceCore.model.age_predictor.csproj" PrivateAssets="contentFiles;analyzers" />
 		<ProjectReference Include="..\ViewFaceCore.model.eye_state\ViewFaceCore.model.eye_state.csproj" PrivateAssets="contentFiles;analyzers" />

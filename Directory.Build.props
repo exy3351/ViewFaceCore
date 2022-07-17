@@ -9,9 +9,6 @@
 
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<!-- 中央包管理，主要是为了统一版本号 -->
-		<!--<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>-->
-
 		<!-- 不添加目标框架文件夹，使用自定义的路径 -->
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		
@@ -23,16 +20,13 @@
 		<IntermediateOutputPath>..\..\Output\obj\$(MSBuildProjectName)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
 		<!-- 资源文件设置项，重要，否则net48下访问资源会有问题 -->
 		<EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
-
 		<!--只要不是语言包文件夹名称就行，有时若生成时卡死，可设置为 zh-Hans -->
 		<SatelliteResourceLanguages>cn</SatelliteResourceLanguages>
-
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\viewface.snk</AssemblyOriginatorKeyFile>
-
 		<Authors>View</Authors>
 		<!-- 统一版本号 -->
-		<Version>0.3.5</Version>
+		<Version>22.7.16</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
