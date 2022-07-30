@@ -18,44 +18,48 @@ namespace ViewFaceCore.Sharp
     public sealed class ViewFace : IDisposable
     {
         /// <summary>
+        /// 
+        /// </summary>
+        private bool disposed = false;
+
+        /// <summary>
         /// 使用默认的模型目录初始化人脸识别类
         /// </summary>
         public ViewFace() : this("./models/") { }
+
         /// <summary>
         /// 使用指定的模型目录初始化人脸识别类
         /// </summary>
         /// <param name="modelPath">模型目录</param>
         public ViewFace(string modelPath) => ModelPath = modelPath;
+
         /// <summary>
         /// 使用指定的日志回调函数初始化人脸识别类
         /// </summary>
         /// <param name="action">日志回调函数</param>
         public ViewFace(LogCallBack action) : this("./models/", action) { }
+
         /// <summary>
         /// 使用指定的模型目录、日志回调函数初始化人脸识别类
         /// </summary>
         /// <param name="modelPath">模型目录</param>
         /// <param name="action">日志回调函数</param>
-        public ViewFace(string modelPath, LogCallBack action) : this(modelPath) => ViewFaceBridge.SetLogFunction(action);
+        public ViewFace(string modelPath, LogCallBack action) : this(modelPath)
+            => ViewFaceBridge.SetLogFunction(action);
 
         /// <summary>
-        /// 显示 ViewFace 当前运行的处理器架构。
+        ///
         /// </summary>
-        /// <returns></returns>
-        public override string ToString() => $"处理器架构:{(Environment.Is64BitProcess ? "x64" : "x86")} {base.ToString()}";
+        ~ViewFace()
+        {
+            Dispose(false);
+        }
 
         /// <summary>
         /// 获取或设置人脸检测器配置
         /// </summary>
         public FaceDetectorConfig DetectorConfig { get; set; } = new FaceDetectorConfig();
-        /// <summary>
-        /// 获取或设置模型路径
-        /// </summary>
-        public string ModelPath
-        {
-            get => ViewFaceBridge.ModelPath;
-            set => ViewFaceBridge.ModelPath = value;
-        }
+
         /// <summary>
         /// 获取或设置人脸类型。
         /// <para>
@@ -67,6 +71,7 @@ namespace ViewFaceCore.Sharp
         /// </para>
         /// </summary>
         public FaceType FaceType { get; set; } = FaceType.Normal;
+
         /// <summary>
         /// 获取或设置人脸关键点类型
         /// <para>
@@ -75,14 +80,114 @@ namespace ViewFaceCore.Sharp
         /// </para>
         /// </summary>
         public MarkType MarkType { get; set; } = MarkType.Light;
+
         /// <summary>
-        /// 获取或设置人脸跟踪器的配置
+        /// 获取或设置模型路径
         /// </summary>
-        public FaceTrackerConfig TrackerConfig { get; set; } = new FaceTrackerConfig();
+        public string ModelPath
+        {
+            get => ViewFaceBridge.ModelPath;
+            set => ViewFaceBridge.ModelPath = value;
+        }
+
         /// <summary>
         /// 获取或设置质量评估器的配置
         /// </summary>
         public QualityConfig QualityConfig { get; set; } = new QualityConfig();
+
+        /// <summary>
+        /// 获取或设置人脸跟踪器的配置
+        /// </summary>
+        public FaceTrackerConfig TrackerConfig { get; set; } = new FaceTrackerConfig();
+
+        /// <summary>
+        /// 活体检测器。(单帧图片)
+        /// <para>
+        /// 当 <paramref name="global"/> <see langword="= false"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_first">fas_first.csta</a><br/>
+        /// 当 <paramref name="global"/> <see langword="= true"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_second">fas_second.csta</a>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap">待检测的图片</param>
+        /// <param name="info">面部信息<para>通过 <see cref="FaceDetector(Bitmap)"/> 获取</para></param>
+        /// <param name="points"><paramref name="info"/> 对应的关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <param name="global">是否启用全局检测能力</param>
+        /// <returns>活体检测状态</returns>
+        public AntiSpoofingStatus AntiSpoofing(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, bool global = false)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+
+            FaceImage img = new FaceImage(width, height, channels);
+            return (AntiSpoofingStatus)ViewFaceBridge.AntiSpoofing(bgr, ref img, info.Location, points, global);
+        }
+
+        /// <summary>
+        /// 活体检测器。(视频帧图片)
+        /// <para>
+        /// 当 <paramref name="global"/> <see langword="= false"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_first">fas_first.csta</a><br/>
+        /// 当 <paramref name="global"/> <see langword="= true"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_second">fas_second.csta</a>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap">待检测的图片</param>
+        /// <param name="info">面部信息<para>通过 <see cref="FaceDetector(Bitmap)"/> 获取</para></param>
+        /// <param name="points"><paramref name="info"/> 对应的关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <param name="global">是否启用全局检测能力</param>
+        /// <returns>如果为 <see cref="AntiSpoofingStatus.Detecting"/>，则说明需要继续调用此方法，传入更多的图片</returns>
+        public AntiSpoofingStatus AntiSpoofingVideo(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, bool global = false)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+
+            FaceImage img = new(width, height, channels);
+            return (AntiSpoofingStatus)ViewFaceBridge.AntiSpoofingVideo(bgr, ref img, info.Location, points, global);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 提取人脸特征值。
+        /// <para>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Normal"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer">face_recognizer.csta</a><br/>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Mask"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_mask">face_recognizer_mask.csta</a><br/>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Light"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_light">face_recognizer_light.csta</a><br/>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="points"></param>
+        /// <exception cref="ExtractException"/>
+        /// <returns></returns>
+        public float[] Extract(Bitmap bitmap, FaceMarkPoint[] points)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+            float[] features = new float[ViewFaceBridge.ExtractSize((int)FaceType)];
+
+            FaceImage img = new(width, height, channels);
+            if (ViewFaceBridge.Extract(bgr, ref img, points, features, (int)FaceType))
+            { return features; }
+
+            return default;
+        }
+
+        /// <summary>
+        /// 年龄预测。
+        /// <para>
+        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.age_predictor">age_predictor.csta</a>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap">待检测的图片</param>
+        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <returns>-1: 预测失败失败，其它: 预测的年龄。</returns>
+        public int FaceAgePredictor(Bitmap bitmap, FaceMarkPoint[] points)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+            FaceImage img = new FaceImage(width, height, channels);
+            return ViewFaceBridge.AgePredictor(bgr, ref img, points, points.Length);
+        }
 
         // Public Method
         /// <summary>
@@ -125,6 +230,41 @@ namespace ViewFaceCore.Sharp
         }
 
         /// <summary>
+        /// 眼睛状态检测。
+        /// <para>
+        /// 眼睛的左右是相对图片内容而言的左右。<br />
+        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.eye_state">eye_state.csta</a>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap">待检测的图片</param>
+        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <returns></returns>
+        public EyeStateResult FaceEyeStateDetector(Bitmap bitmap, FaceMarkPoint[] points)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+            FaceImage img = new FaceImage(width, height, channels);
+            int left_eye = 0, right_eye = 0;
+            ViewFaceBridge.EyeStateDetector(bgr, ref img, points, points.Length, ref left_eye, ref right_eye);
+            return new EyeStateResult((EyeState)left_eye, (EyeState)right_eye);
+        }
+
+        /// <summary>
+        /// 性别预测。
+        /// <para>
+        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.gender_predictor">gender_predictor.csta</a>
+        /// </para>
+        /// </summary>
+        /// <param name="bitmap">待检测的图片</param>
+        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <returns>性别。<see cref="Gender.Unknown"/> 代表识别失败</returns>
+        public Gender FaceGenderPredictor(Bitmap bitmap, FaceMarkPoint[] points)
+        {
+            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+            FaceImage img = new FaceImage(width, height, channels);
+            return (Gender)ViewFaceBridge.GenderPredictor(bgr, ref img, points, points.Length);
+        }
+
+        /// <summary>
         /// 识别 <paramref name="bitmap"/> 中指定的人脸信息 <paramref name="info"/> 的关键点坐标。
         /// <para>
         /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Normal"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_landmarker_pts68">face_landmarker_pts68.csta</a><br/>
@@ -147,111 +287,86 @@ namespace ViewFaceCore.Sharp
             double[] _pointX = new double[size];
             double[] _pointY = new double[size];
 
-            FaceImage img = new FaceImage(width, height, channels);
+            FaceImage img = new(width, height, channels);
             if (ViewFaceBridge.FaceMark(bgr, ref img, info.Location, _pointX, _pointY, (int)MarkType))
             {
-                List<FaceMarkPoint> points = new List<FaceMarkPoint>();
+                List<FaceMarkPoint> points = new();
                 for (int i = 0; i < size; i++)
                 { points.Add(new FaceMarkPoint() { X = _pointX[i], Y = _pointY[i] }); }
                 return points.ToArray();
             }
-            else
-            { throw new MarkException("人脸关键点获取失败"); }
+            return default;
         }
 
         /// <summary>
-        /// 提取人脸特征值。
-        /// <para>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Normal"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer">face_recognizer.csta</a><br/>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Mask"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_mask">face_recognizer_mask.csta</a><br/>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Light"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_light">face_recognizer_light.csta</a><br/>
-        /// </para>
-        /// </summary>
-        /// <param name="bitmap"></param>
-        /// <param name="points"></param>
-        /// <exception cref="ExtractException"/>
-        /// <returns></returns>
-        public float[] Extract(Bitmap bitmap, FaceMarkPoint[] points)
-        {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-            float[] features = new float[ViewFaceBridge.ExtractSize((int)FaceType)];
-
-            FaceImage img = new FaceImage(width, height, channels);
-            if (ViewFaceBridge.Extract(bgr, ref img, points, features, (int)FaceType))
-            { return features; }
-            else
-            { throw new ExtractException("人脸特征值提取失败"); }
-        }
-
-        /// <summary>
-        /// 计算特征值相似度。
-        /// <para>只能计算相同 <see cref="FaceType"/> 提取出的特征值</para>
-        /// <para>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Normal"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer">face_recognizer.csta</a><br/>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Mask"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_mask">face_recognizer_mask.csta</a><br/>
-        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Light"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_light">face_recognizer_light.csta</a><br/>
-        /// </para>
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <param name="leftFeatures"></param>
-        /// <param name="rightFeatures"></param>
-        /// <returns></returns>
-        public float Similarity(float[] leftFeatures, float[] rightFeatures)
-        {
-            if (leftFeatures.Length == 0 || rightFeatures.Length == 0)
-                throw new ArgumentNullException("参数不能为空", nameof(leftFeatures));
-            if (leftFeatures.Length != rightFeatures.Length)
-                throw new ArgumentException("两个参数长度不一致");
-
-            return ViewFaceBridge.Similarity(leftFeatures, rightFeatures, (int)FaceType);
-        }
-
-        /// <summary>
-        /// 判断相似度是否为同一个人。
-        /// </summary>
-        /// <param name="similarity">相似度</param>
-        /// <returns></returns>
-        public bool IsSelf(float similarity) => similarity > FaceCompareConfig.GetThreshold(FaceType);
-
-        /// <summary>
-        /// 活体检测器。(单帧图片)
-        /// <para>
-        /// 当 <paramref name="global"/> <see langword="= false"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_first">fas_first.csta</a><br/>
-        /// 当 <paramref name="global"/> <see langword="= true"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_second">fas_second.csta</a>
-        /// </para>
+        /// 人脸质量评估
         /// </summary>
         /// <param name="bitmap">待检测的图片</param>
         /// <param name="info">面部信息<para>通过 <see cref="FaceDetector(Bitmap)"/> 获取</para></param>
         /// <param name="points"><paramref name="info"/> 对应的关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
-        /// <param name="global">是否启用全局检测能力</param>
-        /// <returns>活体检测状态</returns>
-        public AntiSpoofingStatus AntiSpoofing(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, bool global = false)
+        /// <param name="type">质量评估类型</param>
+        /// <returns></returns>
+        public QualityResult FaceQuality(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, QualityType type)
         {
             byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-
             FaceImage img = new FaceImage(width, height, channels);
-            return (AntiSpoofingStatus)ViewFaceBridge.AntiSpoofing(bgr, ref img, info.Location, points, global);
-        }
+            int level = 0; float score = 0; bool res = false;
 
-        /// <summary>
-        /// 活体检测器。(视频帧图片)
-        /// <para>
-        /// 当 <paramref name="global"/> <see langword="= false"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_first">fas_first.csta</a><br/>
-        /// 当 <paramref name="global"/> <see langword="= true"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.fas_second">fas_second.csta</a>
-        /// </para>
-        /// </summary>
-        /// <param name="bitmap">待检测的图片</param>
-        /// <param name="info">面部信息<para>通过 <see cref="FaceDetector(Bitmap)"/> 获取</para></param>
-        /// <param name="points"><paramref name="info"/> 对应的关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
-        /// <param name="global">是否启用全局检测能力</param>
-        /// <returns>如果为 <see cref="AntiSpoofingStatus.Detecting"/>，则说明需要继续调用此方法，传入更多的图片</returns>
-        public AntiSpoofingStatus AntiSpoofingVideo(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, bool global = false)
-        {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
+            switch (type)
+            {
+                case QualityType.Brightness:
+                    res = ViewFaceBridge.QualityOfBrightness(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.Brightness.V0, QualityConfig.Brightness.V1, QualityConfig.Brightness.V2, QualityConfig.Brightness.V3);
+                    break;
 
-            FaceImage img = new FaceImage(width, height, channels);
-            return (AntiSpoofingStatus)ViewFaceBridge.AntiSpoofingVideo(bgr, ref img, info.Location, points, global);
+                case QualityType.Clarity:
+                    res = ViewFaceBridge.QualityOfClarity(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.Clarity.Low, QualityConfig.Clarity.High);
+                    break;
+
+                case QualityType.Integrity:
+                    res = ViewFaceBridge.QualityOfIntegrity(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.Integrity.Low, QualityConfig.Integrity.High);
+                    break;
+
+                case QualityType.Pose:
+                    res = ViewFaceBridge.QualityOfPose(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score);
+                    break;
+
+                case QualityType.PoseEx:
+                    res = ViewFaceBridge.QualityOfPoseEx(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.PoseEx.YawLow, QualityConfig.PoseEx.YawHigh,
+                        QualityConfig.PoseEx.PitchLow, QualityConfig.PoseEx.PitchHigh,
+                        QualityConfig.PoseEx.RollLow, QualityConfig.PoseEx.RollHigh);
+                    break;
+
+                case QualityType.Resolution:
+                    res = ViewFaceBridge.QualityOfResolution(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.Resolution.Low, QualityConfig.Resolution.High);
+                    break;
+
+                case QualityType.ClarityEx:
+                    res = ViewFaceBridge.QualityOfClarityEx(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score,
+                        QualityConfig.ClarityEx.BlurThresh);
+                    break;
+
+                case QualityType.Structure:
+                    res = ViewFaceBridge.QualityOfNoMask(bgr, ref img, info.Location, points, points.Length,
+                        ref level, ref score);
+                    break;
+            }
+
+            if (res)
+            { return new QualityResult() { Level = (QualityLevel)level, Score = score }; }
+            else
+            { return new QualityResult() { Level = QualityLevel.Error, Score = -1 }; }
         }
 
         /// <summary>
@@ -292,132 +407,41 @@ namespace ViewFaceCore.Sharp
         }
 
         /// <summary>
-        /// 人脸质量评估
+        /// 判断相似度是否为同一个人。
         /// </summary>
-        /// <param name="bitmap">待检测的图片</param>
-        /// <param name="info">面部信息<para>通过 <see cref="FaceDetector(Bitmap)"/> 获取</para></param>
-        /// <param name="points"><paramref name="info"/> 对应的关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
-        /// <param name="type">质量评估类型</param>
+        /// <param name="similarity">相似度</param>
         /// <returns></returns>
-        public QualityResult FaceQuality(Bitmap bitmap, FaceInfo info, FaceMarkPoint[] points, QualityType type)
-        {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-            FaceImage img = new FaceImage(width, height, channels);
-            int level = 0; float score = 0; bool res = false;
-
-            switch (type)
-            {
-                case QualityType.Brightness:
-                    res = ViewFaceBridge.QualityOfBrightness(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.Brightness.V0, QualityConfig.Brightness.V1, QualityConfig.Brightness.V2, QualityConfig.Brightness.V3);
-                    break;
-                case QualityType.Clarity:
-                    res = ViewFaceBridge.QualityOfClarity(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.Clarity.Low, QualityConfig.Clarity.High);
-                    break;
-                case QualityType.Integrity:
-                    res = ViewFaceBridge.QualityOfIntegrity(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.Integrity.Low, QualityConfig.Integrity.High);
-                    break;
-                case QualityType.Pose:
-                    res = ViewFaceBridge.QualityOfPose(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score);
-                    break;
-                case QualityType.PoseEx:
-                    res = ViewFaceBridge.QualityOfPoseEx(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.PoseEx.YawLow, QualityConfig.PoseEx.YawHigh,
-                        QualityConfig.PoseEx.PitchLow, QualityConfig.PoseEx.PitchHigh,
-                        QualityConfig.PoseEx.RollLow, QualityConfig.PoseEx.RollHigh);
-                    break;
-                case QualityType.Resolution:
-                    res = ViewFaceBridge.QualityOfResolution(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.Resolution.Low, QualityConfig.Resolution.High);
-                    break;
-                case QualityType.ClarityEx:
-                    res = ViewFaceBridge.QualityOfClarityEx(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score,
-                        QualityConfig.ClarityEx.BlurThresh);
-                    break;
-                case QualityType.Structure:
-                    res = ViewFaceBridge.QualityOfNoMask(bgr, ref img, info.Location, points, points.Length,
-                        ref level, ref score);
-                    break;
-            }
-
-            if (res)
-            { return new QualityResult() { Level = (QualityLevel)level, Score = score }; }
-            else
-            { return new QualityResult() { Level = QualityLevel.Error, Score = -1 }; }
-        }
-
+        public bool IsSelf(float similarity) => similarity > FaceCompareConfig.GetThreshold(FaceType);
 
         /// <summary>
-        /// 年龄预测。
+        /// 计算特征值相似度。
+        /// <para>只能计算相同 <see cref="FaceType"/> 提取出的特征值</para>
         /// <para>
-        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.age_predictor">age_predictor.csta</a>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Normal"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer">face_recognizer.csta</a><br/>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Mask"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_mask">face_recognizer_mask.csta</a><br/>
+        /// 当 <see cref="FaceType"/> <see langword="="/> <see cref="FaceType.Light"/> 时， 需要模型：<a href="https://www.nuget.org/packages/ViewFaceCore.model.face_recognizer_light">face_recognizer_light.csta</a><br/>
         /// </para>
         /// </summary>
-        /// <param name="bitmap">待检测的图片</param>
-        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
-        /// <returns>-1: 预测失败失败，其它: 预测的年龄。</returns>
-        public int FaceAgePredictor(Bitmap bitmap, FaceMarkPoint[] points)
-        {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-            FaceImage img = new FaceImage(width, height, channels);
-            return ViewFaceBridge.AgePredictor(bgr, ref img, points, points.Length);
-        }
-
-        /// <summary>
-        /// 性别预测。
-        /// <para>
-        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.gender_predictor">gender_predictor.csta</a>
-        /// </para>
-        /// </summary>
-        /// <param name="bitmap">待检测的图片</param>
-        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
-        /// <returns>性别。<see cref="Gender.Unknown"/> 代表识别失败</returns>
-        public Gender FaceGenderPredictor(Bitmap bitmap, FaceMarkPoint[] points)
-        {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-            FaceImage img = new FaceImage(width, height, channels);
-            return (Gender)ViewFaceBridge.GenderPredictor(bgr, ref img, points, points.Length);
-        }
-
-        /// <summary>
-        /// 眼睛状态检测。
-        /// <para>
-        /// 眼睛的左右是相对图片内容而言的左右。<br />
-        /// 需要模型 <a href="https://www.nuget.org/packages/ViewFaceCore.model.eye_state">eye_state.csta</a>
-        /// </para>
-        /// </summary>
-        /// <param name="bitmap">待检测的图片</param>
-        /// <param name="points">关键点坐标<para>通过 <see cref="FaceMark(Bitmap, FaceInfo)"/> 获取</para></param>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentNullException"/>
+        /// <param name="leftFeatures"></param>
+        /// <param name="rightFeatures"></param>
         /// <returns></returns>
-        public EyeStateResult FaceEyeStateDetector(Bitmap bitmap, FaceMarkPoint[] points)
+        public float Similarity(float[] leftFeatures, float[] rightFeatures)
         {
-            byte[] bgr = bitmap.To24BGRByteArray(out int width, out int height, out int channels);
-            FaceImage img = new FaceImage(width, height, channels);
-            int left_eye = 0, right_eye = 0;
-            ViewFaceBridge.EyeStateDetector(bgr, ref img, points, points.Length, ref left_eye, ref right_eye);
-            return new EyeStateResult((EyeState)left_eye, (EyeState)right_eye);
+            if (leftFeatures.Length == 0 || rightFeatures.Length == 0)
+                return default;
+            if (leftFeatures.Length != rightFeatures.Length)
+                return default;
+
+            return ViewFaceBridge.Similarity(leftFeatures, rightFeatures, (int)FaceType);
         }
-
-
-        private bool disposed = false;
 
         /// <summary>
-        /// 
+        /// 显示 ViewFace 当前运行的处理器架构。
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        /// <returns></returns>
+        public override string ToString() => $"处理器架构:{(Environment.Is64BitProcess ? "x64" : "x86")} {base.ToString()}";
 
         private void Dispose(bool disposing)
         {
@@ -432,14 +456,6 @@ namespace ViewFaceCore.Sharp
 
                 disposed = true;
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        ~ViewFace()
-        {
-            Dispose(false);
         }
     }
 }

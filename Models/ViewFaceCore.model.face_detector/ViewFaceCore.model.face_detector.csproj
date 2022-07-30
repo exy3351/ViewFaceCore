@@ -1,11 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		
+
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="ViewFaceCore.model.face_detector.nuspec" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="..\..\viewface.snk" Link="viewface.snk" />
+		<Content Include="face_detector.csta" CopyToOutputDirectory="PreserveNewest">
+			<pack>true</pack>
+			<taget>build</taget>
+		</Content>
+		
+		<Content Include="ViewFaceCore.model.face_detector.targets" CopyToOutputDirectory="PreserveNewest">
+			<pack>true</pack>
+		</Content>
 	</ItemGroup>
 
 </Project>

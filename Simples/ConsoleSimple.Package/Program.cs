@@ -16,8 +16,11 @@ namespace ViewFaceTestPackage
             string oldImgPath = @"images/Jay_3.jpg";
             string newImgPath = @"images/Jay_4.jpg";
 
-            using ViewFace viewFace = new ViewFace((str) => { Debug.WriteLine(str); }); // 初始化人脸识别类，并设置 日志回调函数
-            // 系统默认使用的轻量级识别模型。如果对精度有要求，请切换到 Normal 模式；并下载需要模型文件 放入生成目录的 model 文件夹中
+            // 初始化人脸识别类，并设置 日志回调函数
+            using ViewFace viewFace = new((str) => { Debug.WriteLine(str); }); 
+            
+            // 系统默认使用的轻量级识别模型。如果对精度有要求，请切换到 Normal 模式；
+            // 并下载需要模型文件 放入生成目录的 model 文件夹中
             viewFace.FaceType = FaceType.Normal;
             // 系统默认使用5个人脸关键点。//不建议改动，除非是使用口罩模型。
             viewFace.MarkType = MarkType.Light;
@@ -25,12 +28,14 @@ namespace ViewFaceTestPackage
             #region 识别老照片
 
             float[] oldEigenValues;
-            using Bitmap oldImg = (Bitmap)Image.FromFile(oldImgPath); // 从文件中加载照片 // 或者视频帧等
+            // 从文件中加载照片 
+            // 或者视频帧等
+            using Bitmap oldImg = (Bitmap)Image.FromFile(oldImgPath); 
 
             Stopwatch oldSt = Stopwatch.StartNew();
 
-            var oldFaceInfos = viewFace.FaceDetector(oldImg); // 检测图片中包含的人脸信息。(置信度、位置、大小)
-            oldFaceInfos = viewFace.FaceDetector(oldImg); // 异步检测图片中的人脸信息
+            // 检测图片中包含的人脸信息。(置信度、位置、大小)
+            var oldFaceInfos = viewFace.FaceDetector(oldImg); 
 
             if (oldFaceInfos.Length > 0) //识别到人脸
             {
@@ -108,20 +113,24 @@ namespace ViewFaceTestPackage
             Console.WriteLine();
             #region 识别新照片
             float[] newEigenValues;
-            using Bitmap _newImg = (Bitmap)Image.FromFile(newImgPath/*新图片路径*/); // 从文件中加载照片 // 或者视频帧等
+            // 新图片路径
+            using Bitmap _newImg = (Bitmap)Image.FromFile(newImgPath); 
+            // 从文件中加载照片 // 或者视频帧等
             using Bitmap newImg = (Bitmap)_newImg.ChangeSize(new Size(1024, 768));
             oldSt.Restart();
-            var newFaces = viewFace.FaceDetector(newImg); // 检测图片中包含的人脸信息。(置信度、位置、大小)
+
+            // 检测图片中包含的人脸信息。(置信度、位置、大小)
+            var newFaces = viewFace.FaceDetector(newImg); 
             if (newFaces.Length > 0) //识别到人脸
             {
-                { // 打印人脸信息
-                    Console.WriteLine($"识别到的人脸数量：{newFaces.Length} 。人脸信息：\n");
-                    Console.WriteLine($"序号\t人脸置信度\t位置X\t位置Y\t宽度\t高度");
-                    for (int i = 0; i < newFaces.Length; i++)
-                    {
-                        Console.WriteLine($"{i + 1}\t{newFaces[i].Score:f8}\t{newFaces[i].Location.X}\t{newFaces[i].Location.Y}\t{newFaces[i].Location.Width}\t{newFaces[i].Location.Height}");
-                    }
+                // 打印人脸信息
+                Console.WriteLine($"识别到的人脸数量：{newFaces.Length} 。人脸信息：\n");
+                Console.WriteLine($"序号\t人脸置信度\t位置X\t位置Y\t宽度\t高度");
+                for (int i = 0; i < newFaces.Length; i++)
+                {
+                    Console.WriteLine($"{i + 1}\t{newFaces[i].Score:f8}\t{newFaces[i].Location.X}\t{newFaces[i].Location.Y}\t{newFaces[i].Location.Width}\t{newFaces[i].Location.Height}");
                 }
+
                 var newPoints = viewFace.FaceMark(newImg, newFaces[0]); // 获取 第一个人脸 的识别关键点。(人脸识别的关键点数据)
                 newEigenValues = viewFace.Extract(newImg, newPoints); // 获取 指定的关键点 的特征值。
             }

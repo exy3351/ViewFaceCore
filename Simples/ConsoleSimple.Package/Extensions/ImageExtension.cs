@@ -28,11 +28,10 @@ namespace View.Drawing.Extensions
         /// <returns></returns>
         public static Image ChangeSize(this Image image, Size size, ChangeSizeConfiguration configuration = null)
         {
-            if (image is null)
-            { throw new ArgumentNullException(nameof(image)); }
+            if (image is null) return default;
 
             if (configuration == null)
-            { configuration = default; }
+            { configuration = new(); }
 
             Size newSize = ImageHandle.SizeToSize(image.Size, size, configuration.SizeMode);
             Bitmap destBitmap;

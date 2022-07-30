@@ -1,10 +1,4 @@
-﻿using System;
-using ViewFaceCore.Sharp.Model;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Runtime.InteropServices;
 
 namespace ViewFaceCore.Plus
 {
@@ -23,15 +17,16 @@ namespace ViewFaceCore.Plus
         {
             get
             {
-                string architecture, platform;
-                switch (RuntimeInformation.ProcessArchitecture)
+              
+                string architecture = RuntimeInformation.ProcessArchitecture switch
                 {
-                    case Architecture.X86: architecture = "x86"; break;
-                    case Architecture.X64: architecture = "x64"; break;
-                    case Architecture.Arm: architecture = "arm"; break;
-                    case Architecture.Arm64: architecture = "arm64"; break;
-                    default: throw new PlatformNotSupportedException($"不支持的处理器体系结构: {RuntimeInformation.ProcessArchitecture}");
-                }
+                    Architecture.X86 => "x86",
+                    Architecture.X64 => "x64",
+                    Architecture.Arm => "arm",
+                    Architecture.Arm64 => "arm64",
+                    _ => throw new PlatformNotSupportedException($"不支持的处理器体系结构: {RuntimeInformation.ProcessArchitecture}"),
+                };
+                string platform;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 { platform = "win"; }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -41,7 +36,9 @@ namespace ViewFaceCore.Plus
 
                 var libraryPath = Path.Combine(Environment.CurrentDirectory, "viewfacecore", platform, architecture);
                 if (Directory.Exists(libraryPath))
-                { return libraryPath; }
+                {
+                    return libraryPath;
+                }
                 else { throw new DirectoryNotFoundException($"找不到本机库目录: {libraryPath}"); }
             }
         }
@@ -49,7 +46,7 @@ namespace ViewFaceCore.Plus
         /// <summary>
         /// ViewFaceBridge 的所有依赖库。(按照依赖顺序排列)
         /// </summary>
-        private static readonly List<string> Libraries = new List<string>()
+        private static readonly List<string> Libraries = new()
         {
             "SeetaAuthorize",
             "tennis",
@@ -82,22 +79,20 @@ namespace ViewFaceCore.Plus
         {
 #if NETFRAMEWORK || NETSTANDARD
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            { SetDllDirectory(LibraryPath); }
-            else
-            { throw new PlatformNotSupportedException($"不支持的操作系统: {RuntimeInformation.OSDescription}"); }
+            {
+                SetDllDirectory(LibraryPath);
+            }
 #elif NETCOREAPP3_1_OR_GREATER
             #region Resolver Libraries on Linux
             // Author: <a href="https://github.com/withsalt">withsalt</a>
             // 预加载 ViewFaceBridge 的所有依赖库
 
-            string format;
+            string format = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             { format = "{0}.dll"; }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             { format = "lib{0}.so"; }
-            else
-            { throw new PlatformNotSupportedException($"不支持的操作系统: {RuntimeInformation.OSDescription}"); }
-
+            
             foreach (var library in Libraries)
             {
                 string libraryPath = Path.Combine(LibraryPath, string.Format(format, library));

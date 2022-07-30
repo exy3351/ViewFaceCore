@@ -11,7 +11,9 @@ namespace ViewFaceCore.Plus
     /// </summary>
     static partial class ViewFaceBridge
     {
-
+        /// <summary>
+        /// 
+        /// </summary>
         const string LibraryName = "ViewFaceBridge";
 
         /// <summary>

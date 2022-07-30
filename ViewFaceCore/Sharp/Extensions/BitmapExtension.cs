@@ -22,7 +22,7 @@ namespace ViewFaceCore.Extension
         /// <returns>图像的 BGR <see cref="byte"/> 数组</returns>
         public static byte[] To24BGRByteArray(this Bitmap bitmap, out int width, out int height, out int channels)
         {
-            Rectangle rectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+            Rectangle rectangle = new(0, 0, bitmap.Width, bitmap.Height);
             BitmapData bitmapData = bitmap.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
             width = bitmap.Width;
             height = bitmap.Height;

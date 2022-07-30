@@ -9,9 +9,12 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<icon>View-Logo.png</icon>
 		<description>SeetaFace model ‘face_detector’ for ViewFaceCore</description>
+		<!--<contentFiles>
+			<files include="face_detector.csta" buildAction="None" copyToOutput="true" target="models\" />
+		</contentFiles>-->
 	</metadata>
 	<files>
-		<file src="face_detector.csta" target="build\models\face_detector.csta" />
+		<file src="face_detector.csta" target="content\models\"  />
 		<file src="ViewFaceCore.model.face_detector.targets" target="build\ViewFaceCore.model.face_detector.targets" />
 		<file src="..\..\Images\View-Logo.png" target="View-Logo.png" />
 	</files>
